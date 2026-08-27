@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuitaFondosGif</title>
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div id="app">
+
+    <!-- ===================== barra superior ===================== -->
+    <header>
+      <div class="corner">
+        <button class="sq" id="btnTheme" title="Cambiar entre claro y oscuro">
+          <svg id="themeIcon" viewBox="0 0 24 24">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+          </svg>
+        </button>
+        <button class="sq" id="btnHelp" title="Cómo se usa">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.9" />
+            <circle cx="12" cy="17.4" r=".6" fill="currentColor" stroke="none" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="brand">
+        <img src="icon.png" alt="">
+        <span>QuitaFondosGif</span>
+      </div>
+
+      <span class="filename" id="fname"></span>
+      <span class="spacer"></span>
+
+      <button class="btn ghost" id="btnOpen">Abrir imagen</button>
+      <button class="btn ghost" id="btnPng" disabled>Guardar PNG</button>
+      <button class="btn key" id="btnGif" disabled>Exportar GIF</button>
+      <input type="file" id="file" accept="image/gif,image/png,image/jpeg,image/webp" hidden>
+    </header>
+
+    <div class="body">
+
+      <!-- ===================== panel lateral ===================== -->
+      <aside>
+
+        <div class="sec">
+          <h2>Herramientas</h2>
+
+          <div class="tools">
+            <button class="tool" data-tool="pick" aria-pressed="false" title="Marcar un color de fondo">
+              <svg viewBox="0 0 24 24">
+                <path d="M18 3.5a2.1 2.1 0 0 1 3 3L11 16.5l-4 1 1-4z" />
+                <path d="M14.5 7 17 9.5" />
+              </svg>Color
+            </button>
+            <button class="tool" data-tool="erase" aria-pressed="true" title="Borrar a mano">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 16.5 10.5 10l6 6-2.5 2.5H7z" />
+                <path d="M10.5 10 15 5.5a2 2 0 0 1 3 0l3 3a2 2 0 0 1 0 3L16.5 16" />
+                <path d="M4 21h16" />
+              </svg>Borrar
+            </button>
+            <button class="tool" data-tool="restore" aria-pressed="false" title="Devolver lo borrado">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 10a9 9 0 1 1 2 6" />
+                <path d="M3 5v5h5" />
+              </svg>Volver
+            </button>
+            <button class="tool" data-tool="move" aria-pressed="false" title="Mover la imagen de encima">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v18M3 12h18M12 3 9.5 5.8M12 3l2.5 2.8M12 21l-2.5-2.8M12 21l2.5-2.8M3 12l2.8-2.5M3 12l2.8 2.5M21 12l-2.8-2.5M21 12l-2.8 2.5" />
+              </svg>Mover
+            </button>
+          </div>
+
+          <div class="block">
+            <div class="row">
+              <label class="lbl" for="brush">Tamaño del pincel</label>
+              <span class="val" id="brushVal">30 px</span>
+            </div>
+            <input type="range" id="brush" min="2" max="300" value="30">
+          </div>
+
+          <div class="row block-sm">
+            <label class="lbl">El pincel pinta en</label>
+          </div>
+          <div class="seg" id="targetSeg">
+            <button data-t="frame" aria-pressed="true">Este cuadro</button>
+            <button data-t="sel" aria-pressed="false">Elegidos</button>
+            <button data-t="all" aria-pressed="false">Todos</button>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h2>Fondo por color</h2>
+
+          <div id="keys"></div>
+          <p class="note" id="noKeys">
+            Con el cuentagotas hacé clic sobre el fondo. Cada color se borra solo en los cuadros
+            donde de verdad aparece.
+          </p>
+
+          <div class="block">
+            <div class="row">
+              <label class="lbl" for="tol">Tolerancia</label>
+              <span class="val" id="tolVal">48</span>
+            </div>
+            <input type="range" id="tol" min="0" max="160" value="48">
+
+            <div class="row block-sm">
+              <label class="lbl" for="soft">Suavizar el borde</label>
+              <span class="val" id="softVal">16</span>
+            </div>
+            <input type="range" id="soft" min="0" max="80" value="16">
+
+            <div class="row block-sm">
+              <label class="lbl" for="modeSel">Alcance del color</label>
+            </div>
+            <select id="modeSel">
+              <option value="global">Todo el color, esté donde esté</option>
+              <option value="contig">Solo lo pegado a los bordes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sec" id="secOvs" hidden>
+          <h2>Imágenes encima</h2>
+
+          <div id="ovs"></div>
+
+          <div id="ovCtl" class="block">
+            <div class="row">
+              <label class="lbl" for="ovScale">Tamaño</label>
+              <span class="val" id="ovScaleVal">100%</span>
+            </div>
+            <input type="range" id="ovScale" min="5" max="400" value="100">
+
+            <div class="row block-sm">
+              <label class="lbl" for="ovRot">Giro</label>
+              <span class="val" id="ovRotVal">0°</span>
+            </div>
+            <input type="range" id="ovRot" min="-180" max="180" value="0">
+
+            <div class="row block-sm">
+              <label class="lbl" for="ovOp">Opacidad</label>
+              <span class="val" id="ovOpVal">100%</span>
+            </div>
+            <input type="range" id="ovOp" min="0" max="100" value="100">
+
+            <div class="row block-sm">
+              <label class="lbl" for="ovScope">Se ve en</label>
+            </div>
+            <select id="ovScope">
+              <option value="all">Todos los cuadros</option>
+              <option value="pick">Solo los cuadros elegidos</option>
+            </select>
+
+            <div class="grid2 block-sm">
+              <button class="btn ghost sm" id="ovCenter">Centrar</button>
+              <button class="btn ghost sm" id="ovDel">Quitar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h2>Máscara del cuadro</h2>
+
+          <div class="grid2">
+            <button class="btn ghost sm" id="btnCopy">Copiar</button>
+            <button class="btn ghost sm" id="btnPaste" disabled>Pegar en elegidos</button>
+            <button class="btn ghost sm" id="btnClearFrame">Limpiar cuadro</button>
+            <button class="btn ghost sm" id="btnClearSel">Limpiar elegidos</button>
+          </div>
+
+          <div class="grid2 block-sm">
+            <button class="btn ghost sm" id="btnUndo" disabled>Deshacer</button>
+            <button class="btn ghost sm" id="btnRedo" disabled>Rehacer</button>
+          </div>
+
+          <button class="btn ghost sm wide block-sm" id="btnReset">Borrar todas las máscaras</button>
+        </div>
+
+        <div class="sec">
+          <h2>Vista</h2>
+
+          <div class="seg" id="bgSeg">
+            <button data-bg="checker" aria-pressed="true">Damero</button>
+            <button data-bg="white" aria-pressed="false">Blanco</button>
+            <button data-bg="black" aria-pressed="false">Negro</button>
+          </div>
+
+          <div class="row block">
+            <label class="lbl" for="zoom">Zoom</label>
+            <span class="val" id="zoomVal">100%</span>
+          </div>
+          <input type="range" id="zoom" min="10" max="1600" value="100">
+
+          <button class="btn ghost sm wide block-sm" id="btnFit">Ajustar a la pantalla</button>
+        </div>
+
+        <div class="sec">
+          <h2>Al exportar</h2>
+
+          <div class="seg" id="expSeg">
+            <button data-exp="alpha" aria-pressed="true">Transparente</button>
+            <button data-exp="white" aria-pressed="false">Blanco</button>
+            <button data-exp="black" aria-pressed="false">Negro</button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- ===================== lienzo y tira de cuadros ===================== -->
+      <main>
+
+        <div class="stagewrap">
+          <div id="viewport">
+            <div id="wrap"><canvas id="cv"></canvas></div>
+            <div id="brushcur"></div>
+          </div>
+
+          <div id="dropover"><span id="dropMsg">Soltá para apoyarla encima</span></div>
+
+          <div id="drop">
+            <div class="card">
+              <img src="icon.png" alt="">
+              <h1>Soltá tu GIF acá</h1>
+              <p>
+                Se abre completo, cuadro por cuadro. Marcás el fondo, retocás con la goma
+                y cada cuadro guarda su propia máscara.
+              </p>
+              <button class="btn key" id="btnOpen2">Elegir un archivo</button>
+              <div class="tiny">gif · png · jpg · webp</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="strip">
+          <div class="striphead">
+            <span>Cuadros</span>
+            <button class="lnk" id="selAll">Elegir todos</button>
+            <button class="lnk" id="selNone">Ninguno</button>
+            <button class="lnk" id="selInv">Invertir</button>
+            <span class="spacer"></span>
+            <span class="mk" id="markMsg"></span>
+          </div>
+          <div id="thumbs"></div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ===================== transporte ===================== -->
+    <footer>
+      <button class="iconbtn play" id="btnPlay" title="Reproducir">
+        <svg viewBox="0 0 24 24">
+          <path d="M7 4.5v15l13-7.5z" />
+        </svg>
+      </button>
+      <button class="iconbtn" id="btnPrev" title="Cuadro anterior">
+        <svg viewBox="0 0 24 24">
+          <path d="M15 5 8 12l7 7" />
+        </svg>
+      </button>
+      <button class="iconbtn" id="btnNext" title="Cuadro siguiente">
+        <svg viewBox="0 0 24 24">
+          <path d="m9 5 7 7-7 7" />
+        </svg>
+      </button>
+
+      <input type="range" id="frameRange" min="0" max="0" value="0">
+      <span class="counter" id="counter">— / —</span>
+      <span class="meta" id="meta"></span>
+    </footer>
+
+  </div>
+
+  <!-- ===================== ventana de ayuda ===================== -->
+  <div class="modal" id="help">
+    <div class="sheet">
+
+      <h3><img src="icon.png" alt="">QuitaFondosGif</h3>
+      <p class="sub">Sacale el fondo a un GIF sin perder la animación.</p>
+
+      <div class="steps">
+        <div class="step">
+          <i>1</i>
+          <p>Soltá el GIF en la ventana. Se abre entero y podés recorrer los cuadros con la tira de abajo.</p>
+        </div>
+        <div class="step">
+          <i>2</i>
+          <p>Con <b>Color</b> hacé clic en el fondo. Cada color marcado se borra únicamente en los cuadros
+            donde aparece, y podés elegirlos a mano.</p>
+        </div>
+        <div class="step">
+          <i>3</i>
+          <p>Ajustá <b>tolerancia</b> y <b>suavizado</b> hasta que el contorno quede limpio.</p>
+        </div>
+        <div class="step">
+          <i>4</i>
+          <p>Retocá con <b>Borrar</b> y <b>Volver</b>. Cada cuadro guarda su propia máscara; el selector de
+            arriba decide si pintás en uno, en los elegidos o en todos.</p>
+        </div>
+        <div class="step">
+          <i>5</i>
+          <p>Arrastrá cualquier imagen desde tu computadora y soltala sobre el lienzo para apoyarla encima.
+            La acomodás con <b>Mover</b>.</p>
+        </div>
+        <div class="step">
+          <i>6</i>
+          <p>Exportá como GIF con transparencia, o guardá el cuadro suelto en PNG.</p>
+        </div>
+      </div>
+
+      <div class="klist">
+        <div class="k"><kbd>P</kbd> cuentagotas</div>
+        <div class="k"><kbd>E</kbd> borrador</div>
+        <div class="k"><kbd>R</kbd> restaurar</div>
+        <div class="k"><kbd>M</kbd> mover</div>
+        <div class="k"><kbd>[</kbd> <kbd>]</kbd> tamaño del pincel</div>
+        <div class="k"><kbd>←</kbd> <kbd>→</kbd> cambiar de cuadro</div>
+        <div class="k"><kbd>Espacio</kbd> reproducir</div>
+        <div class="k"><kbd>Espacio</kbd> + arrastrar: mover la vista</div>
+        <div class="k"><kbd>Rueda</kbd> zoom</div>
+        <div class="k"><kbd>F</kbd> ajustar a la pantalla</div>
+        <div class="k"><kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer</div>
+        <div class="k"><kbd>Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>Z</kbd> rehacer</div>
+        <div class="k"><kbd>Clic</kbd> en miniatura: ir al cuadro</div>
+        <div class="k"><kbd>Ctrl</kbd>/<kbd>⇧</kbd>+clic: elegir varios</div>
+      </div>
+
+      <div class="sheetfoot">
+        <button class="btn key" id="helpOk">Empezar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="busy">
+    <div class="box">
+      <p id="busyText">Armando el GIF…</p>
+      <div class="bar"><i id="busyBar"></i></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="gif-decoder.js"></script>
+  <script src="app.js"></script>
+
+</body>
+
+</html>
